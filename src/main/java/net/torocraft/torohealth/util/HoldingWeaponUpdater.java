@@ -5,7 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PotionItem;
-import net.minecraft.world.item.SwordItem;
+import net.neoforged.neoforge.common.Tags;
 import net.torocraft.torohealth.ToroHealth;
 import net.torocraft.torohealth.config.Config.Mode;
 
@@ -24,7 +24,8 @@ public class HoldingWeaponUpdater {
   }
 
   private static boolean isWeapon(ItemStack item) {
-    return item.getItem() instanceof SwordItem || item.getItem() instanceof BowItem
+    return item.is(Tags.Items.MELEE_WEAPON_TOOLS) 
+        || item.getItem() instanceof BowItem
         || item.getItem() instanceof PotionItem;
   }
 }

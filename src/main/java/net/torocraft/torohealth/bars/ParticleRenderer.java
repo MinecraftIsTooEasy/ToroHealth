@@ -1,60 +1,80 @@
 package net.torocraft.torohealth.bars;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.util.Mth;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.phys.Vec3;
 import net.torocraft.torohealth.ToroHealth;
-import org.lwjgl.opengl.GL11;
 
 public class ParticleRenderer {
 
-  public static void renderParticles(PoseStack matrix, Camera camera) {
-    for (BarParticle p : BarStates.PARTICLES) {
-      renderParticle(matrix, p, camera);
+  public static void renderParticles(PoseStack poseStack, Camera camera) {
+    if (BarStates.PARTICLES.isEmpty()) {
+      return;
+    }
+
+    Minecraft minecraft = Minecraft.getInstance();
+    MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
+    
+    for (BarParticle particle : BarStates.PARTICLES) {
+      renderParticle(poseStack, bufferSource, particle, camera);
+    }
+    
+    // Force the buffer to flush immediately
+    try {
+      bufferSource.endBatch();
+    } catch (Exception e) {
+      System.err.println("Buffer flush failed: " + e.getMessage());
     }
   }
 
-  private static void renderParticle(PoseStack matrix, BarParticle particle, Camera camera) {
-    double distanceSquared = camera.getPosition().distanceToSqr(particle.x, particle.y, particle.z);
+  private static void renderParticle(PoseStack poseStack, MultiBufferSource bufferSource, BarParticle particle, Camera camera) {
+    Vec3 cameraPos = camera.getPosition();
+    double distanceSquared = cameraPos.distanceToSqr(particle.x, particle.y, particle.z);
+    
     if (distanceSquared > ToroHealth.CONFIG.particle.distanceSquared) {
       return;
     }
 
-    float scaleToGui = 0.025f;
-
-    Minecraft client = Minecraft.getInstance();
-    float tickDelta = client.getDeltaFrameTime();
-
-    double x = Mth.lerp((double) tickDelta, particle.xPrev, particle.x);
-    double y = Mth.lerp((double) tickDelta, particle.yPrev, particle.y);
-    double z = Mth.lerp((double) tickDelta, particle.zPrev, particle.z);
-
-    Vec3 camPos = camera.getPosition();
-    double camX = camPos.x;
-    double camY = camPos.y;
-    double camZ = camPos.z;
-
-    matrix.pushPose();
-    matrix.translate(x - camX, y - camY, z - camZ);
-    matrix.mulPose(Vector3f.YP.rotationDegrees(-camera.getYRot()));
-    matrix.mulPose(Vector3f.XP.rotationDegrees(camera.getXRot()));
-    matrix.scale(-scaleToGui, -scaleToGui, scaleToGui);
-
-    RenderSystem.setShader(GameRenderer::getPositionColorShader);
-    RenderSystem.enableDepthTest();
-    RenderSystem.enableBlend();
-    RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE,
-        GL11.GL_ZERO);
-
-    HealthBarRenderer.drawDamageNumber(matrix, particle.damage, 0, 0, 10);
-
-    RenderSystem.disableBlend();
-
-    matrix.popPose();
+    Vec3 particlePos = new Vec3(particle.x, particle.y, particle.z);
+    Vec3 offset = particlePos.subtract(cameraPos);
+    
+    poseStack.pushPose();
+    poseStack.translate(offset.x, offset.y, offset.z);
+    
+    
+    float scale = 0.035f; 
+    poseStack.scale(-scale, -scale, scale);
+    
+    String damageText = String.valueOf(Math.abs(particle.damage));
+    Minecraft minecraft = Minecraft.getInstance();
+    Font font = minecraft.font;
+    
+    int textWidth = font.width(damageText);
+    float textX = -textWidth / 2.0f;
+    float textY = 0.0f;
+    
+    int color;
+    if (particle.damage < 0) {
+      color = 0xFF00FF00; 
+    } else {
+      color = 0xFFFF0000; 
+    }
+    
+    try {
+      font.drawInBatch(damageText, textX, textY, color, false, poseStack.last().pose(), 
+                       bufferSource, Font.DisplayMode.SEE_THROUGH, 0, 15728880);
+    } catch (Exception e) {
+      try {
+        font.drawInBatch(damageText, textX, textY, color, false, poseStack.last().pose(), 
+                         bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
+      } catch (Exception e2) {
+        System.err.println("Both particle text rendering methods failed: " + e2.getMessage());
+      }
+    }
+    
+    poseStack.popPose();
   }
 }

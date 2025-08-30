@@ -1,6 +1,5 @@
 package net.torocraft.torohealth.util;
 
-import java.util.stream.StreamSupport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -13,6 +12,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.monster.Slime;
 
 public class EntityUtil {
@@ -44,12 +44,23 @@ public class EntityUtil {
   }
 
   public static boolean showHealthBar(Entity entity, Minecraft client) {
+    Player player = client.player;
+    if (player == null) return false;
+    
     return entity instanceof LivingEntity && !(entity instanceof ArmorStand)
-        && (!entity.isInvisibleTo(client.player) || entity.isCurrentlyGlowing() || entity.isOnFire()
+        && (!entity.isInvisibleTo(player) || entity.isCurrentlyGlowing() || entity.isOnFire()
             || entity instanceof Creeper && ((Creeper) entity).isPowered()
-
-            || StreamSupport.stream(entity.getAllSlots().spliterator(), false)
-                .anyMatch(is -> !is.isEmpty()))
-        && entity != client.player && !entity.isSpectator();
+            || (entity instanceof LivingEntity livingEntity && hasEquipment(livingEntity))
+            )
+        && entity != player && !entity.isSpectator();
+  }
+  
+  private static boolean hasEquipment(LivingEntity entity) {
+    return !entity.getMainHandItem().isEmpty() 
+        || !entity.getOffhandItem().isEmpty()
+        || !entity.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).isEmpty()
+        || !entity.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).isEmpty()
+        || !entity.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.LEGS).isEmpty()
+        || !entity.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).isEmpty();
   }
 }

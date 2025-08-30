@@ -1,10 +1,15 @@
 package net.torocraft.torohealth;
 
 import java.util.Random;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
+import org.slf4j.Logger;
+
+import com.mojang.logging.LogUtils;
+
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.torocraft.torohealth.config.Config;
 import net.torocraft.torohealth.config.loader.ConfigLoader;
 import net.torocraft.torohealth.display.Hud;
@@ -14,6 +19,7 @@ import net.torocraft.torohealth.util.RayTrace;
 public class ToroHealth {
 
   public static final String MODID = "torohealth";
+  public static final Logger LOGGER = LogUtils.getLogger();
 
   public static Config CONFIG = new Config();
   public static Hud HUD = new Hud();
@@ -24,14 +30,19 @@ public class ToroHealth {
   private static ConfigLoader<Config> CONFIG_LOADER = new ConfigLoader<>(new Config(),
       ToroHealth.MODID + ".json", config -> ToroHealth.CONFIG = config);
 
-  public ToroHealth() {
-    FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-    MinecraftForge.EVENT_BUS.register(this);
-    ToroHealthClient.init();
+  public ToroHealth(IEventBus modEventBus, ModContainer modContainer) {
+    modEventBus.addListener(this::commonSetup);
+    
+    if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+      ToroHealthClient.init(modEventBus);
+    }
   }
 
-  private void setup(final FMLCommonSetupEvent event) {
+  public static net.minecraft.resources.ResourceLocation id(String path) {
+    return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, path);
+  }
+
+  private void commonSetup(final FMLCommonSetupEvent event) {
     CONFIG_LOADER.load();
   }
-
 }

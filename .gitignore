@@ -31,3 +31,4 @@ run/
 
 *.7z
 logs
+.DS_Store

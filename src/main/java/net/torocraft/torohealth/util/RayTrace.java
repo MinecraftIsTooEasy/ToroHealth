@@ -9,39 +9,21 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class RayTrace implements BlockGetter {
+// NeoForge 1.21.8: Simplified RayTrace utility without BlockGetter interface
+public class RayTrace {
   private static Predicate<Entity> isVisible =
       entity -> !entity.isSpectator() && entity.isPickable();
-  private static Minecraft minecraft = Minecraft.getInstance();
-
-  @Override
-  public BlockEntity getBlockEntity(BlockPos pos) {
-    return minecraft.level.getBlockEntity(pos);
-  }
-
-  @Override
-  public BlockState getBlockState(BlockPos pos) {
-    return minecraft.level.getBlockState(pos);
-  }
-
-  @Override
-  public FluidState getFluidState(BlockPos pos) {
-    return minecraft.level.getFluidState(pos);
-  }
 
   public LivingEntity getEntityInCrosshair(float partialTicks, double reachDistance) {
+    Minecraft minecraft = Minecraft.getInstance();
+    if (minecraft.player == null) return null;
     Minecraft client = Minecraft.getInstance();
     Entity viewer = client.getCameraEntity();
 
@@ -65,12 +47,17 @@ public class RayTrace implements BlockGetter {
     if (result.getEntity() instanceof LivingEntity) {
       LivingEntity target = (LivingEntity) result.getEntity();
 
-      HitResult blockHit =
-          clip(setupRayTraceContext(client.player, reachDistance, ClipContext.Fluid.NONE));
+      if (client.player != null) {
+        Player player = client.player;
+        HitResult blockHit =
+            clip(setupRayTraceContext(player, reachDistance, ClipContext.Fluid.NONE));
 
-      if (!blockHit.getType().equals(BlockHitResult.Type.MISS)) {
-        double blockDistance = blockHit.getLocation().distanceTo(position);
-        if (blockDistance > target.distanceTo(client.player)) {
+        if (!blockHit.getType().equals(BlockHitResult.Type.MISS)) {
+          double blockDistance = blockHit.getLocation().distanceTo(position);
+          if (blockDistance > target.distanceTo(player)) {
+            return target;
+          }
+        } else {
           return target;
         }
       } else {
@@ -97,29 +84,14 @@ public class RayTrace implements BlockGetter {
     return new ClipContext(fromPos, toPos, ClipContext.Block.OUTLINE, fluidHandling, player);
   }
 
-  @Override
   public BlockHitResult clip(ClipContext context) {
-    return BlockGetter.traverseBlocks(context.getFrom(), context.getTo(), context, (c, pos) -> {
-      BlockState block = this.getBlockState(pos);
-      if (!block.canOcclude()) {
-        return null;
-      }
-      VoxelShape voxelshape = c.getBlockShape(block, this, pos);
-      return this.clipWithInteractionOverride(c.getFrom(), c.getTo(), pos, voxelshape, block);
-    }, (c) -> {
-      Vec3 vec3 = c.getFrom().subtract(c.getTo());
-      return BlockHitResult.miss(c.getTo(), Direction.getNearest(vec3.x, vec3.y, vec3.z),
-          new BlockPos(c.getTo()));
-    });
+    Minecraft minecraft = Minecraft.getInstance();
+    if (minecraft.level != null) {
+      return minecraft.level.clip(context);
+    }
+    //Fallback if level is null
+    Vec3 to = context.getTo();
+    return BlockHitResult.miss(to, Direction.DOWN, BlockPos.containing(to));
   }
 
-  @Override
-  public int getHeight() {
-    return 0;
-  }
-
-  @Override
-  public int getMinBuildHeight() {
-    return 0;
-  }
 }

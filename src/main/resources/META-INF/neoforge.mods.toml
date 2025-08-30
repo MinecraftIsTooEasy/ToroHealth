@@ -1,0 +1,55 @@
+# This is the neoforge.mods.toml file for ToroHealth Damage Indicators
+# The overall format is standard TOML format, v0.5.0.
+
+# The license for the mod
+license="GPL3"
+
+# A URL to refer people to when problems occur with this mod
+issueTrackerURL="https://github.com/ToroCraft/ToroHealth/issues"
+
+# A list of mods - how many allowed here is determined by the individual mod loader
+[[mods]]
+
+# The modid of the mod
+modId="torohealth"
+
+# The version number of the mod
+version="1.21.8-1.0.0"
+
+# A display name for the mod
+displayName="ToroHealth Damage Indicators"
+
+# A URL for the "homepage" for this mod, displayed in the mod UI
+displayURL="https://www.curseforge.com/minecraft/mc-mods/torohealth-damage-indicators"
+
+# A file name (in the root of the mod JAR) containing a logo for display
+#logoFile="torohealth.png"
+
+# A text field displayed in the mod UI
+authors="ToroCraft"
+
+# The description text for the mod (multi line!)
+description='''Health bars will appear in the top left corner for the entity in the player's crosshairs.
+Displays damage indicators and health bars for all entities.'''
+
+# A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
+[[dependencies.torohealth]]
+    # the modid of the dependency
+    modId="neoforge"
+    # The type of the dependency. Can be one of "required", "optional", "incompatible" or "discouraged" (case insensitive).
+    type="required"
+    # The version range of the dependency
+    versionRange="[21.8.39,)"
+    # An ordering relationship for the dependency.
+    ordering="NONE"
+    # Side this dependency is applied on - BOTH, CLIENT, or SERVER
+    side="CLIENT"
+
+# Here's another dependency
+[[dependencies.torohealth]]
+    modId="minecraft"
+    type="required"
+    # This version range declares a minimum of the current minecraft version up to but not including the next major version
+    versionRange="[1.21.8]"
+    ordering="NONE"
+    side="CLIENT"
