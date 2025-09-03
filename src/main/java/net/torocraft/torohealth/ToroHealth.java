@@ -45,4 +45,8 @@ public class ToroHealth {
   private void commonSetup(final FMLCommonSetupEvent event) {
     CONFIG_LOADER.load();
   }
+  
+  public static void saveConfig() {
+    CONFIG_LOADER.save(CONFIG);
+  }
 }

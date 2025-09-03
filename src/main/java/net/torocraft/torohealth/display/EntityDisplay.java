@@ -28,11 +28,11 @@ public class EntityDisplay {
     updateScale();
   }
 
-  public void draw(GuiGraphics guiGraphics, float scale) {
+  public void draw(GuiGraphics guiGraphics, float scale, float absoluteX, float absoluteY) {
     if (entity != null) {
       try {
-        int x = (int) xOffset;
-        int y = (int) yOffset;
+        int x = (int) (absoluteX + xOffset);
+        int y = (int) (absoluteY + yOffset);
         float entitySize = entityScale * scale;
         
         Vector3f translation = new Vector3f(0.0F, 0.0F, 0.0F);
@@ -56,6 +56,10 @@ public class EntityDisplay {
       }
     }
   }
+  
+  public void draw(GuiGraphics guiGraphics, float scale) {
+    draw(guiGraphics, scale, 0, 0);
+  }
 
   private void updateScale() {
     if (entity == null) {
@@ -74,7 +78,7 @@ public class EntityDisplay {
       entityScale = entity.isBaby() ? 31 : 16;
     }
 
-    xOffset = WIDTH / 2 + 4;
+    xOffset = WIDTH / 2 - 1;
 
     yOffset = HEIGHT / 2 + 15; 
     if (entity instanceof Ghast) {

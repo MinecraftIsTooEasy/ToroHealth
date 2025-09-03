@@ -40,7 +40,7 @@ public class Hud extends Screen {
     float x = config.hud.x;
     AnchorPoint anchor = config.hud.anchorPoint;
     Minecraft mc = Minecraft.getInstance();
-    float wScreen = mc.getWindow().getGuiScaledHeight();
+    float wScreen = mc.getWindow().getGuiScaledWidth();
 
     switch (anchor) {
       case BOTTOM_CENTER:
@@ -48,7 +48,7 @@ public class Hud extends Screen {
         return (wScreen / 2) + x;
       case BOTTOM_RIGHT:
       case TOP_RIGHT:
-        return (wScreen) + x;
+        return wScreen - x; 
       default:
         return x;
     }
@@ -64,7 +64,7 @@ public class Hud extends Screen {
       case BOTTOM_CENTER:
       case BOTTOM_LEFT:
       case BOTTOM_RIGHT:
-        return y + hScreen;
+        return hScreen - y;
       default:
         return y;
     }
@@ -106,21 +106,44 @@ public class Hud extends Screen {
       return;
     }
 
+    AnchorPoint anchor = config.hud.anchorPoint;
+    float hudWidth = 160;
+    float hudHeight = 60;
+    
+    float finalX = x;
+    float finalY = y;
+    
+    if (anchor == AnchorPoint.TOP_RIGHT || anchor == AnchorPoint.BOTTOM_RIGHT) {
+      finalX = x - hudWidth;
+    } else if (anchor == AnchorPoint.TOP_CENTER || anchor == AnchorPoint.BOTTOM_CENTER) {
+      finalX = x - (hudWidth / 2);
+    }
+    
+    if (anchor == AnchorPoint.BOTTOM_LEFT || anchor == AnchorPoint.BOTTOM_CENTER || anchor == AnchorPoint.BOTTOM_RIGHT) {
+      finalY = y - hudHeight;
+    }
+
     var matrix = guiGraphics.pose();
     matrix.pushMatrix();
+    
+    matrix.translate(finalX, finalY);
     matrix.scale(scale, scale);
-    matrix.translate(x - 10, y - 10);
+    
+    matrix.translate(-10, -10);
     if (config.hud.showSkin) {
       this.drawSkin(guiGraphics);
     }
     matrix.translate(10, 10);
+    
     if (config.hud.showEntity) {
-      entityDisplay.draw(guiGraphics, scale);
+      entityDisplay.draw(guiGraphics, scale, finalX, finalY);
     }
+    
     matrix.translate(44, 0);
     if (config.hud.showBar) {
       barDisplay.draw(guiGraphics, entity);
     }
+    
     matrix.popMatrix();
   }
 
