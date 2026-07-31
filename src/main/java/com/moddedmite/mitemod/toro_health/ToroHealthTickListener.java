@@ -23,9 +23,8 @@ public class ToroHealthTickListener implements ITickListener {
 
     @Override
     public void onRenderTick(float partialTick) {
-        if (Minecraft.getMinecraft() == null) return;
-        if (Minecraft.getMinecraft().theWorld == null) return;
-        if (Minecraft.getMinecraft().thePlayer == null) return;
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc == null || mc.theWorld == null || mc.thePlayer == null) return;
 
         ToroHealthClient client = ToroHealth.getClientInstance();
         client.setEntityInCrosshairs();

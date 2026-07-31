@@ -3,6 +3,7 @@ package com.moddedmite.mitemod.toro_health;
 import net.minecraft.Entity;
 import net.minecraft.EntityLivingBase;
 import net.minecraft.Minecraft;
+import com.moddedmite.mitemod.toro_health.gui.GuiEntityStatus;
 
 import java.util.WeakHashMap;
 

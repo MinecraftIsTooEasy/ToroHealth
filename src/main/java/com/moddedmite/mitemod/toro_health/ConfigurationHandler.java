@@ -8,18 +8,20 @@ import java.util.Properties;
 
 public class ConfigurationHandler {
 
-    public static boolean showEntityModel = true;
-    public static boolean showDamageParticles = true;
-    public static String entityStatusDisplay = "HEARTS";
-    public static String statusDisplayPosition = "TOP LEFT";
-    public static int statusDisplayX = 0;
-    public static int statusDisplayY = 0;
-    public static int damageColor = 0xff0000;
-    public static int healColor = 0x00ff00;
-    public static int hideDelay = 400;
+    public static boolean showEntityModel;
+    public static boolean showDamageParticles;
+    public static String entityStatusDisplay;
+    public static String statusDisplayPosition;
+    public static String skin;
+    public static int statusDisplayX;
+    public static int statusDisplayY;
+    public static int damageColor;
+    public static int healColor;
+    public static int hideDelay;
 
-    private static final String[] ACCEPTED_DISPLAY = {"HEARTS", "NUMERIC", "OFF"};
+    private static final String[] ACCEPTED_DISPLAY = {"HEARTS", "NUMERIC", "BAR", "OFF"};
     private static final String[] ACCEPTED_POSITIONS = {"TOP LEFT", "TOP CENTER", "TOP RIGHT", "BOTTOM LEFT", "BOTTOM RIGHT", "CUSTOM"};
+    private static final String[] ACCEPTED_SKINS = {"NONE", "BASIC", "HEAVY"};
     private static final String[] ACCEPTED_COLORS = {"RED", "GREEN", "BLUE", "YELLOW", "ORANGE", "WHITE", "BLACK", "PURPLE"};
 
     private static File configFile;
@@ -44,16 +46,16 @@ public class ConfigurationHandler {
     public static void loadConfiguration() {
         try (FileInputStream fis = new FileInputStream(configFile)) {
             properties.load(fis);
-
+            skin = getValidValue(properties.getProperty("skin", "BASIC"), ACCEPTED_SKINS, "BASIC");
             showEntityModel = Boolean.parseBoolean(properties.getProperty("show_entity_model", "true"));
-            showDamageParticles = Boolean.parseBoolean(properties.getProperty("show_damage_particles", "true"));
             entityStatusDisplay = getValidValue(properties.getProperty("entity_status_display", "HEARTS"), ACCEPTED_DISPLAY, "HEARTS");
             statusDisplayPosition = getValidValue(properties.getProperty("status_display_position", "TOP LEFT"), ACCEPTED_POSITIONS, "TOP LEFT");
             statusDisplayX = Integer.parseInt(properties.getProperty("status_display_x", "0"));
             statusDisplayY = Integer.parseInt(properties.getProperty("status_display_y", "0"));
-            damageColor = mapColor(properties.getProperty("damage_color", "RED"));
-            healColor = mapColor(properties.getProperty("heal_color", "GREEN"));
             hideDelay = Integer.parseInt(properties.getProperty("hide_delay", "400"));
+            showDamageParticles = Boolean.parseBoolean(properties.getProperty("show_damage_particles", "true"));
+            healColor = mapColor(properties.getProperty("heal_color", "GREEN"));
+            damageColor = mapColor(properties.getProperty("damage_color", "RED"));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -63,15 +65,16 @@ public class ConfigurationHandler {
 
     public static void saveConfiguration() {
         try (FileOutputStream fos = new FileOutputStream(configFile)) {
+            properties.setProperty("skin", skin);
             properties.setProperty("show_entity_model", String.valueOf(showEntityModel));
-            properties.setProperty("show_damage_particles", String.valueOf(showDamageParticles));
             properties.setProperty("entity_status_display", entityStatusDisplay);
             properties.setProperty("status_display_position", statusDisplayPosition);
             properties.setProperty("status_display_x", String.valueOf(statusDisplayX));
             properties.setProperty("status_display_y", String.valueOf(statusDisplayY));
-            properties.setProperty("damage_color", getColorName(damageColor));
-            properties.setProperty("heal_color", getColorName(healColor));
             properties.setProperty("hide_delay", String.valueOf(hideDelay));
+            properties.setProperty("show_damage_particles", String.valueOf(showDamageParticles));
+            properties.setProperty("heal_color", getColorName(healColor));
+            properties.setProperty("damage_color", getColorName(damageColor));
             properties.store(fos, "ToroHealth Configuration");
         } catch (IOException e) {
             e.printStackTrace();
