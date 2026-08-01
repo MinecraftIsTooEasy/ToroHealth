@@ -20,7 +20,7 @@ public class ToroHealthClient {
     public void displayDamageDealt(EntityLivingBase entity) {
         if (entity == null || entity.worldObj == null) return;
         if (!entity.worldObj.isRemote) return;
-        if (!ConfigurationHandler.showDamageParticles) return;
+        if (!ToroHealthConfigs.showDamageParticles()) return;
 
         int currentHealth = (int) Math.ceil(entity.getHealth());
         Integer previousHealth = previousHealthMap.get(entity);

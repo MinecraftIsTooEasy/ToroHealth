@@ -65,9 +65,9 @@ public class DamageParticle extends EntityFX {
         GL11.glEnable(3008);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
-        int color = ConfigurationHandler.damageColor;
+        int color = ToroHealthConfigs.damageColor();
         if (damage < 0) {
-            color = ConfigurationHandler.healColor;
+            color = ToroHealthConfigs.healColor();
         }
 
         final FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;

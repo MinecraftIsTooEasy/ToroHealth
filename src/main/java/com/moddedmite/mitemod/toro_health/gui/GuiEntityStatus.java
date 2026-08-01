@@ -7,8 +7,8 @@ import net.minecraft.ResourceLocation;
 import net.minecraft.ScaledResolution;
 import net.minecraft.Tessellator;
 import org.lwjgl.opengl.GL11;
-import com.moddedmite.mitemod.toro_health.ConfigurationHandler;
 import com.moddedmite.mitemod.toro_health.ToroHealth;
+import com.moddedmite.mitemod.toro_health.ToroHealthConfigs;
 import com.moddedmite.mitemod.toro_health.display.BarDisplay;
 import com.moddedmite.mitemod.toro_health.display.EntityDisplay;
 import com.moddedmite.mitemod.toro_health.display.HeartsDisplay;
@@ -59,7 +59,7 @@ public class GuiEntityStatus extends Gui {
     public void drawHealthBar() {
         if (!showHealthBar) return;
 
-        String entityStatusDisplay = ConfigurationHandler.entityStatusDisplay;
+        String entityStatusDisplay = ToroHealthConfigs.entityStatusDisplay();
         if (entityStatusDisplay.equals("OFF")) return;
 
         updateGuiAge();
@@ -71,9 +71,9 @@ public class GuiEntityStatus extends Gui {
     }
 
     private void drawSkin() {
-        if (ConfigurationHandler.skin.equals("NONE")) return;
+        if (ToroHealthConfigs.skin().equals("NONE")) return;
 
-        if (ConfigurationHandler.skin.equals("HEAVY")) {
+        if (ToroHealthConfigs.skin().equals("HEAVY")) {
             mc.getTextureManager().bindTexture(SKIN_HEAVY);
         } else {
             mc.getTextureManager().bindTexture(SKIN_BASIC);
@@ -85,7 +85,7 @@ public class GuiEntityStatus extends Gui {
 
     private void updateGuiAge() {
         age = age + 15;
-        if (age > ConfigurationHandler.hideDelay) {
+        if (age > ToroHealthConfigs.hideDelay()) {
             hideHealthBar();
         }
     }
@@ -96,12 +96,12 @@ public class GuiEntityStatus extends Gui {
         x = screenX;
         y = screenY;
 
-        if (ConfigurationHandler.showEntityModel) {
+        if (ToroHealthConfigs.showEntityModel()) {
             entityDisplay.setPosition(x, y);
             x += 40;
         }
 
-        if (ConfigurationHandler.statusDisplayPosition.contains("BOTTOM")) {
+        if (ToroHealthConfigs.statusDisplayPosition().contains("BOTTOM")) {
             y += 6;
         }
 
@@ -111,21 +111,21 @@ public class GuiEntityStatus extends Gui {
     }
 
     private void draw() {
-        if (ConfigurationHandler.showEntityModel) {
+        if (ToroHealthConfigs.showEntityModel()) {
             entityDisplay.draw();
         }
 
-        if ("NUMERIC".equals(ConfigurationHandler.entityStatusDisplay)) {
+        if ("NUMERIC".equals(ToroHealthConfigs.entityStatusDisplay())) {
             numericDisplay.draw();
-        } else if ("BAR".equals(ConfigurationHandler.entityStatusDisplay)) {
+        } else if ("BAR".equals(ToroHealthConfigs.entityStatusDisplay())) {
             barDisplay.draw();
-        } else if ("HEARTS".equals(ConfigurationHandler.entityStatusDisplay)) {
+        } else if ("HEARTS".equals(ToroHealthConfigs.entityStatusDisplay())) {
             heartsDisplay.draw();
         }
     }
 
     private void adjustForDisplayPositionSetting() {
-        if (ConfigurationHandler.showEntityModel) {
+        if (ToroHealthConfigs.showEntityModel()) {
             displayHeight = 40;
             displayWidth = 140;
         } else {
@@ -134,7 +134,7 @@ public class GuiEntityStatus extends Gui {
         }
 
         ScaledResolution viewport = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
-        String displayPosition = ConfigurationHandler.statusDisplayPosition;
+        String displayPosition = ToroHealthConfigs.statusDisplayPosition();
 
         int sh = viewport.getScaledHeight();
         int sw = viewport.getScaledWidth();
@@ -155,8 +155,8 @@ public class GuiEntityStatus extends Gui {
             screenX = (sw - displayWidth) / 2;
         }
 
-        screenX += ConfigurationHandler.statusDisplayX;
-        screenY += ConfigurationHandler.statusDisplayY;
+        screenX += ToroHealthConfigs.statusDisplayX();
+        screenY += ToroHealthConfigs.statusDisplayY();
     }
 
     private void showHealthBar() {
