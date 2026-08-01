@@ -59,8 +59,7 @@ public class GuiEntityStatus extends Gui {
     public void drawHealthBar() {
         if (!showHealthBar) return;
 
-        String entityStatusDisplay = ToroHealthConfigs.entityStatusDisplay();
-        if (entityStatusDisplay.equals("OFF")) return;
+        if (ToroHealthConfigs.entityStatusDisplay() == ToroHealthConfigs.EntityStatusDisplay.OFF) return;
 
         updateGuiAge();
         if (!showHealthBar) return;
@@ -71,9 +70,9 @@ public class GuiEntityStatus extends Gui {
     }
 
     private void drawSkin() {
-        if (ToroHealthConfigs.skin().equals("NONE")) return;
+        if (ToroHealthConfigs.skin() == ToroHealthConfigs.Skin.NONE) return;
 
-        if (ToroHealthConfigs.skin().equals("HEAVY")) {
+        if (ToroHealthConfigs.skin() == ToroHealthConfigs.Skin.HEAVY) {
             mc.getTextureManager().bindTexture(SKIN_HEAVY);
         } else {
             mc.getTextureManager().bindTexture(SKIN_BASIC);
@@ -101,7 +100,7 @@ public class GuiEntityStatus extends Gui {
             x += 40;
         }
 
-        if (ToroHealthConfigs.statusDisplayPosition().contains("BOTTOM")) {
+        if (ToroHealthConfigs.statusDisplayPosition().isBottom()) {
             y += 6;
         }
 
@@ -115,11 +114,11 @@ public class GuiEntityStatus extends Gui {
             entityDisplay.draw();
         }
 
-        if ("NUMERIC".equals(ToroHealthConfigs.entityStatusDisplay())) {
+        if (ToroHealthConfigs.entityStatusDisplay() == ToroHealthConfigs.EntityStatusDisplay.NUMERIC) {
             numericDisplay.draw();
-        } else if ("BAR".equals(ToroHealthConfigs.entityStatusDisplay())) {
+        } else if (ToroHealthConfigs.entityStatusDisplay() == ToroHealthConfigs.EntityStatusDisplay.BAR) {
             barDisplay.draw();
-        } else if ("HEARTS".equals(ToroHealthConfigs.entityStatusDisplay())) {
+        } else if (ToroHealthConfigs.entityStatusDisplay() == ToroHealthConfigs.EntityStatusDisplay.HEARTS) {
             heartsDisplay.draw();
         }
     }
@@ -134,24 +133,24 @@ public class GuiEntityStatus extends Gui {
         }
 
         ScaledResolution viewport = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
-        String displayPosition = ToroHealthConfigs.statusDisplayPosition();
+        ToroHealthConfigs.StatusDisplayPosition displayPosition = ToroHealthConfigs.statusDisplayPosition();
 
         int sh = viewport.getScaledHeight();
         int sw = viewport.getScaledWidth();
 
-        if (displayPosition.contains("TOP") || displayPosition.equals("CUSTOM")) {
+        if (displayPosition.isTop() || displayPosition.isCustom()) {
             screenY = PADDING_FROM_EDGE;
         }
-        if (displayPosition.contains("BOTTOM")) {
+        if (displayPosition.isBottom()) {
             screenY = sh - displayHeight - PADDING_FROM_EDGE;
         }
-        if (displayPosition.contains("LEFT") || displayPosition.equals("CUSTOM")) {
+        if (displayPosition.isLeft()) {
             screenX = PADDING_FROM_EDGE;
         }
-        if (displayPosition.contains("RIGHT")) {
+        if (displayPosition.isRight()) {
             screenX = sw - displayWidth - PADDING_FROM_EDGE;
         }
-        if (displayPosition.contains("CENTER")) {
+        if (displayPosition.isCenter()) {
             screenX = (sw - displayWidth) / 2;
         }
 
