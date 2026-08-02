@@ -1,5 +1,7 @@
 package com.moddedmite.mitemod.toro_health.display;
 
+import net.minecraft.DamageSource;
+import net.minecraft.EntityLivingBase;
 import net.minecraft.Gui;
 import net.minecraft.Minecraft;
 import net.minecraft.MathHelper;
@@ -90,35 +92,23 @@ public class HeartsDisplay extends AbstractHealthDisplay implements ToroHealthDi
 
     private void drawArmor() {
         mc.getTextureManager().bindTexture(GuiEntityStatus.ICONS);
-        int armor = getArmorValue(entity);
+        float armor = getArmorValue(entity);
+        if (armor <= 0) return;
 
-        for (int i = 0; i < 10; ++i) {
-            if (armor > 0) {
-                int armorIconX = x + i * 8;
-                if (i * 2 + 1 < armor) {
-                    gui.drawTexturedModalRect(armorIconX, y, 34, 9, 9, 9);
-                }
-                if (i * 2 + 1 == armor) {
-                    gui.drawTexturedModalRect(armorIconX, y, 25, 9, 9, 9);
-                }
-                if (i * 2 + 1 > armor) {
-                    gui.drawTexturedModalRect(armorIconX, y, 16, 9, 9, 9);
-                }
+        int numIcons = MathHelper.ceiling_float_int(armor);
+        for (int i = 0; i < numIcons; ++i) {
+            int armorIconX = x + i * 8;
+            float upper = i + 1;
+            if (armor >= upper) {
+                gui.drawTexturedModalRect(armorIconX, y, 34, 9, 9, 9);
+            } else {
+                gui.drawTexturedModalRect(armorIconX, y, 25, 9, 9, 9);
             }
         }
         y += 10;
     }
 
-    private int getArmorValue(net.minecraft.EntityLivingBase entity) {
-        int total = 0;
-        net.minecraft.ItemStack[] worn = entity.getWornItems();
-        if (worn != null) {
-            for (net.minecraft.ItemStack stack : worn) {
-                if (stack != null && stack.getItem() instanceof net.minecraft.ItemArmor) {
-                    total += 2;
-                }
-            }
-        }
-        return total;
+    private float getArmorValue(EntityLivingBase entity) {
+        return entity.getTotalProtection(DamageSource.causeMobDamage((EntityLivingBase) null));
     }
 }
