@@ -50,15 +50,15 @@ public class HeartsDisplay extends AbstractHealthDisplay implements ToroHealthDi
 
     private void drawHearts() {
         mc.getTextureManager().bindTexture(GuiEntityStatus.ICONS);
-        int currentHealth = MathHelper.ceiling_float_int(entity.getHealth());
+        float health = entity.getHealth() / 2.0F;
+        float maxHealth = entity.getMaxHealth() / 2.0F;
 
-        float maxHealth = entity.getMaxHealth();
-        int numRowsOfHearts = MathHelper.ceiling_float_int(maxHealth / 2.0F / 10.0F);
+        int totalHearts = MathHelper.ceiling_float_int(maxHealth);
+        int numRowsOfHearts = MathHelper.ceiling_float_int(maxHealth / 10.0F);
         int j2 = Math.max(10 - (numRowsOfHearts - 2), 3);
 
-        for (int currentHeartBeingDrawn = MathHelper.ceiling_float_int(maxHealth / 2.0F) - 1; currentHeartBeingDrawn >= 0; --currentHeartBeingDrawn) {
+        for (int currentHeartBeingDrawn = totalHearts - 1; currentHeartBeingDrawn >= 0; --currentHeartBeingDrawn) {
             int texturePosX = 16;
-            int flashingHeartOffset = 0;
             int foeOffset = 0;
 
             if (determineRelation().equals(Relation.FOE)) {
@@ -76,13 +76,11 @@ public class HeartsDisplay extends AbstractHealthDisplay implements ToroHealthDi
                 hardcoreModeOffset = 5;
             }
 
-            gui.drawTexturedModalRect(heartToDrawX, heartToDrawY, 16 + flashingHeartOffset * 9, 9 * hardcoreModeOffset, 9, 9);
+            gui.drawTexturedModalRect(heartToDrawX, heartToDrawY, 16, 9 * hardcoreModeOffset, 9, 9);
 
-            if (currentHeartBeingDrawn * 2 + 1 < currentHealth) {
+            if (health >= currentHeartBeingDrawn + 1) {
                 gui.drawTexturedModalRect(heartToDrawX, heartToDrawY, texturePosX + foeOffset + 36, 9 * hardcoreModeOffset, 9, 9);
-            }
-
-            if (currentHeartBeingDrawn * 2 + 1 == currentHealth) {
+            } else if (health > currentHeartBeingDrawn) {
                 gui.drawTexturedModalRect(heartToDrawX, heartToDrawY, texturePosX + foeOffset + 45, 9 * hardcoreModeOffset, 9, 9);
             }
         }
