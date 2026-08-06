@@ -95,6 +95,11 @@ public class EntityDisplay implements ToroHealthDisplay {
         GL11.glPopMatrix();
         RenderHelper.disableStandardItemLighting();
         GL11.glDisable(32826); // GL_RESCALE_NORMAL
+        GL11.glDisable(2903);  // GL_COLOR_MATERIAL
+        GL11.glDisable(2896);  // GL_LIGHTING
+        GL11.glDisable(3042);  // GL_BLEND
+        GL11.glEnable(3008);   // GL_ALPHA_TEST
+        GL11.glBlendFunc(770, 771); // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
     }

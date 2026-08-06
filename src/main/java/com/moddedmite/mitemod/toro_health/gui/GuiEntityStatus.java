@@ -65,8 +65,13 @@ public class GuiEntityStatus extends Gui {
         if (!showHealthBar) return;
 
         updatePositions();
-        drawSkin();
-        draw();
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        try {
+            drawSkin();
+            draw();
+        } finally {
+            GL11.glPopAttrib();
+        }
     }
 
     private void drawSkin() {
