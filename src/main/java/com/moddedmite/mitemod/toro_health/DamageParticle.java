@@ -5,6 +5,7 @@ import net.minecraft.FontRenderer;
 import net.minecraft.MathHelper;
 import net.minecraft.Minecraft;
 import net.minecraft.Tessellator;
+import net.minecraft.OpenGlHelper;
 import net.minecraft.World;
 import org.lwjgl.opengl.GL11;
 
@@ -65,6 +66,11 @@ public class DamageParticle extends EntityFX {
         GL11.glEnable(3008);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
+        GL11.glDisable(2912); // GL_FOG - 避免雾导致数字颜色随距离变暗
+        OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+        GL11.glDisable(3553); // GL_TEXTURE_2D - 禁用光照贴图，避免 FontRenderer 未设置 unit 1 坐标导致随机变暗
+        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+
         int color = ToroHealthConfigs.damageColor();
         if (damage < 0) {
             color = ToroHealthConfigs.healColor();
@@ -75,6 +81,11 @@ public class DamageParticle extends EntityFX {
                 -MathHelper.floor_float(fontRenderer.getStringWidth(this.text) / 2.0F) + 1,
                 -MathHelper.floor_float(fontRenderer.FONT_HEIGHT / 2.0F) + 1,
                 color);
+
+        OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+        GL11.glEnable(3553); // 恢复光照贴图
+        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GL11.glEnable(2912); // 恢复雾
 
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         GL11.glDepthFunc(515);
