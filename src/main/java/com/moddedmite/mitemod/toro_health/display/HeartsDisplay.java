@@ -90,7 +90,7 @@ public class HeartsDisplay extends AbstractHealthDisplay implements ToroHealthDi
 
     private void drawArmor() {
         mc.getTextureManager().bindTexture(GuiEntityStatus.ICONS);
-        float armor = getArmorValue(entity);
+        float armor = getArmorValue(entity) / 2.0F;
         if (armor <= 0) return;
 
         int numIcons = MathHelper.ceiling_float_int(armor);
