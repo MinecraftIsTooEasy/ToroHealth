@@ -59,6 +59,11 @@ public class GuiEntityStatus extends Gui {
     public void drawHealthBar() {
         if (!showHealthBar) return;
 
+        if (entity == null || entity.isDead) {
+            hideHealthBar();
+            return;
+        }
+
         if (ToroHealthConfigs.entityStatusDisplay() == ToroHealthConfigs.EntityStatusDisplay.OFF) return;
 
         updateGuiAge();
@@ -174,7 +179,7 @@ public class GuiEntityStatus extends Gui {
     public void setEntity(EntityLivingBase entityToTrack) {
         showHealthBar();
         age = 0;
-        if (entity != null && entity.entityId == entityToTrack.entityId) {
+        if (entity == entityToTrack) {
             return;
         }
         entity = entityToTrack;
