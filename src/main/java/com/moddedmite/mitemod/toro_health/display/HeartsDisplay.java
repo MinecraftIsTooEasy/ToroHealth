@@ -5,9 +5,14 @@ import net.minecraft.EntityLivingBase;
 import net.minecraft.Gui;
 import net.minecraft.Minecraft;
 import net.minecraft.MathHelper;
+import com.moddedmite.mitemod.toro_health.ToroHealthConfigs;
 import com.moddedmite.mitemod.toro_health.gui.GuiEntityStatus;
 
 public class HeartsDisplay extends AbstractHealthDisplay implements ToroHealthDisplay {
+    private static final int MAX_DISPLAYED_HEARTS = 10;
+    private static final int MAX_ARMOR_ICONS = 10;
+    private static final int MAX_ARMOR_DISPLAY_WIDTH = 92;
+
     private final Minecraft mc;
     private final Gui gui;
     private int x, originX = 100;
@@ -44,57 +49,72 @@ public class HeartsDisplay extends AbstractHealthDisplay implements ToroHealthDi
     }
 
     private void drawName() {
-        gui.drawString(mc.fontRenderer, getEntityName(), x, y, 0xFFFFFF);
+        int maxNameWidth = ToroHealthConfigs.showEntityModel() ? 100 : 140;
+        String name = ToroHealthFormatting.fitText(mc.fontRenderer, getEntityName(), maxNameWidth);
+        gui.drawString(mc.fontRenderer, name, x, y, 0xFFFFFF);
         y += 10;
     }
 
     private void drawHearts() {
         mc.getTextureManager().bindTexture(GuiEntityStatus.ICONS);
-        float health = entity.getHealth() / 2.0F;
-        float maxHealth = entity.getMaxHealth() / 2.0F;
+        float maxHealth = entity.getMaxHealth();
+        if (!(maxHealth > 0.0F)) return;
 
-        int totalHearts = MathHelper.ceiling_float_int(maxHealth);
-        int numRowsOfHearts = MathHelper.ceiling_float_int(maxHealth / 10.0F);
-        int j2 = Math.max(10 - (numRowsOfHearts - 2), 3);
+        float maxHearts = maxHealth / 2.0F;
+        int totalHearts = maxHearts >= MAX_DISPLAYED_HEARTS
+                ? MAX_DISPLAYED_HEARTS
+                : MathHelper.ceiling_float_int(maxHearts);
+        if (totalHearts <= 0) return;
 
-        for (int currentHeartBeingDrawn = totalHearts - 1; currentHeartBeingDrawn >= 0; --currentHeartBeingDrawn) {
-            int texturePosX = 16;
-            int foeOffset = 0;
+        int numRowsOfHearts = MathHelper.ceiling_float_int(totalHearts / 10.0F);
+        int rowSpacing = Math.max(10 - (numRowsOfHearts - 2), 3);
+        boolean showHealthValue = !Float.isFinite(maxHealth) || maxHearts > MAX_DISPLAYED_HEARTS;
+        float displayedHealth = showHealthValue
+                ? ToroHealthFormatting.healthRatio(entity.getHealth(), maxHealth) * totalHearts
+                : entity.getHealth() / 2.0F;
+        int foeOffset = determineRelation() == Relation.FOE ? 54
+                : determineRelation() == Relation.UNKNOWN ? 18 : 0;
+        int hardcoreModeOffset = entity.worldObj.getWorldInfo().isHardcoreModeEnabled() ? 5 : 0;
 
-            if (determineRelation().equals(Relation.FOE)) {
-                foeOffset = 54;
-            } else if (determineRelation().equals(Relation.UNKNOWN)) {
-                foeOffset = 18;
-            }
+        for (int heartIndex = totalHearts - 1; heartIndex >= 0; --heartIndex) {
+            int row = MathHelper.ceiling_float_int((float) (heartIndex + 1) / 10.0F) - 1;
+            int heartX = x + heartIndex % 10 * 8;
+            int heartY = y + row * rowSpacing;
 
-            int rowsOfHearts = MathHelper.ceiling_float_int((float) (currentHeartBeingDrawn + 1) / 10.0F) - 1;
-            int heartToDrawX = x + currentHeartBeingDrawn % 10 * 8;
-            int heartToDrawY = y + rowsOfHearts * j2;
+            gui.drawTexturedModalRect(heartX, heartY, 16, 9 * hardcoreModeOffset, 9, 9);
 
-            int hardcoreModeOffset = 0;
-            if (entity.worldObj.getWorldInfo().isHardcoreModeEnabled()) {
-                hardcoreModeOffset = 5;
-            }
-
-            gui.drawTexturedModalRect(heartToDrawX, heartToDrawY, 16, 9 * hardcoreModeOffset, 9, 9);
-
-            if (health >= currentHeartBeingDrawn + 1) {
-                gui.drawTexturedModalRect(heartToDrawX, heartToDrawY, texturePosX + foeOffset + 36, 9 * hardcoreModeOffset, 9, 9);
-            } else if (health > currentHeartBeingDrawn) {
-                gui.drawTexturedModalRect(heartToDrawX, heartToDrawY, texturePosX + foeOffset + 45, 9 * hardcoreModeOffset, 9, 9);
+            if (displayedHealth >= heartIndex + 1) {
+                gui.drawTexturedModalRect(heartX, heartY, 16 + foeOffset + 36, 9 * hardcoreModeOffset, 9, 9);
+            } else if (displayedHealth > heartIndex) {
+                gui.drawTexturedModalRect(heartX, heartY, 16 + foeOffset + 45, 9 * hardcoreModeOffset, 9, 9);
             }
         }
 
-        y += (numRowsOfHearts - 1) * j2 + 10;
+        y += (numRowsOfHearts - 1) * rowSpacing + 10;
+        if (showHealthValue) {
+            mc.fontRenderer.drawStringWithShadow(
+                    ToroHealthFormatting.formatHealthPair(entity.getHealth(), maxHealth), x, y, 0xFFFFFF);
+            y += 10;
+        }
     }
 
     private void drawArmor() {
         mc.getTextureManager().bindTexture(GuiEntityStatus.ICONS);
-        float armor = getArmorValue(entity) / 2.0F;
-        if (armor <= 0) return;
+        float armorValue = getArmorValue(entity);
+        if (!(armorValue > 0.0F)) return;
 
-        int numIcons = MathHelper.ceiling_float_int(armor);
-        for (int i = 0; i < numIcons; ++i) {
+        float armor = armorValue / 2.0F;
+        int visibleIcons = armor >= MAX_ARMOR_ICONS
+                ? MAX_ARMOR_ICONS
+                : MathHelper.ceiling_float_int(armor);
+        String armorLabel = armor > MAX_ARMOR_ICONS ? ToroHealthFormatting.formatAmount(armorValue) : null;
+        if (armorLabel != null) {
+            int labelWidth = mc.fontRenderer.getStringWidth(armorLabel);
+            visibleIcons = Math.min(visibleIcons,
+                    Math.max(0, (MAX_ARMOR_DISPLAY_WIDTH - labelWidth - 2) / 8));
+        }
+
+        for (int i = 0; i < visibleIcons; ++i) {
             int armorIconX = x + i * 8;
             float upper = i + 1;
             if (armor >= upper) {
@@ -102,6 +122,11 @@ public class HeartsDisplay extends AbstractHealthDisplay implements ToroHealthDi
             } else {
                 gui.drawTexturedModalRect(armorIconX, y, 25, 9, 9, 9);
             }
+        }
+
+        if (armorLabel != null) {
+            int labelX = x + visibleIcons * 8 + 2;
+            mc.fontRenderer.drawStringWithShadow(armorLabel, labelX, y, 0xFFFFFF);
         }
         y += 10;
     }

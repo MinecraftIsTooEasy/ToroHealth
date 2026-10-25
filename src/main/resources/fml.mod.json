@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "toro_health",
-  "version": "2.0.7",
-  "name": "ToroHealth",
+  "id": "${id}",
+  "version": "${version}",
+  "name": "${name}",
   "description": "Shows health bars and damage indicators for entities in the crosshair. Ported from ToroHealthMod by torocraft.",
   "authors": [
     "ToroCraft",
@@ -20,6 +20,9 @@
     "registry": [
     ]
   },
+  "modmenu": [
+    "com.moddedmite.mitemod.toro_health.compat.ModMenuImpl"
+  ],
   "mixins": [
     "toro_health.mixins.json"
   ],
@@ -27,7 +30,7 @@
     "fishmodloader": ">=3.4.0",
     "minecraft": "1.6.4-mite",
     "java": ">=17",
-    "rusted_iron_core": ">=1.3.5"
+    "rusted_iron_core": ">=1.5.0"
   },
   "accessWidener": "toro_health.accesswidener"
 }

@@ -20,7 +20,9 @@ public class ToroHealth implements ModInitializer {
         InitializationHandler.getInstance().registerInitializationHandler(new IInitializationHandler() {
             @Override
             public void registerModHandlers() {
-                ConfigManager.getInstance().registerConfig(ToroHealthConfigs.getInstance());
+                ToroHealthConfigs configs = ToroHealthConfigs.getInstance();
+                configs.load();
+                ConfigManager.getInstance().registerConfig(configs);
             }
         });
     }

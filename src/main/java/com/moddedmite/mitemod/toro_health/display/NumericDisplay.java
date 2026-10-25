@@ -43,12 +43,18 @@ public class NumericDisplay implements ToroHealthDisplay {
         drawModalRectWithCustomSizedTexture(x + bgX, y + bgY, 0.0f, 0.0f, WIDTH, HEIGHT, 200.0f, 200.0f);
         drawModalRectWithCustomSizedTexture(x + healthBarX, y + healthBarY, 0.0f, 150.0f, 96, 16, 200.0f, 200.0f);
 
-        int currentHealthWidth = (int) Math.ceil(96 * (entity.getHealth() / entity.getMaxHealth()));
-        drawModalRectWithCustomSizedTexture(x + healthBarX, y + healthBarY, 0.0f, 100.0f, currentHealthWidth, 16, 200.0f, 200.0f);
+        int currentHealthWidth = Math.round(96.0F * ToroHealthFormatting.healthRatio(entity.getHealth(), entity.getMaxHealth()));
+        if (currentHealthWidth > 0) {
+            drawModalRectWithCustomSizedTexture(x + healthBarX, y + healthBarY, 0.0f, 100.0f,
+                    Math.min(96, currentHealthWidth), 16, 200.0f, 200.0f);
+        }
 
         String name = getEntityName();
-        gui.drawCenteredString(mc.fontRenderer, name, x + nameX, y + nameY, 0xFFFFFF);
-        gui.drawCenteredString(mc.fontRenderer, (int) Math.ceil(entity.getHealth()) + "/" + (int) entity.getMaxHealth(), x + healthX, y + healthY, 0xFFFFFF);
+        gui.drawCenteredString(mc.fontRenderer, ToroHealthFormatting.fitText(mc.fontRenderer, name, 96),
+                x + nameX, y + nameY, 0xFFFFFF);
+        gui.drawCenteredString(mc.fontRenderer,
+                ToroHealthFormatting.formatHealthPair(entity.getHealth(), entity.getMaxHealth()),
+                x + healthX, y + healthY, 0xFFFFFF);
     }
 
     @Override

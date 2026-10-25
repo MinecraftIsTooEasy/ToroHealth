@@ -16,6 +16,7 @@ public class EntityDisplay implements ToroHealthDisplay {
     private static final int PADDING = 2;
     private static final int WIDTH = 40;
     private static final int HEIGHT = WIDTH;
+    private static final int MAX_PREVIEW_SCALE = 30;
 
     private int y;
     private float glX;
@@ -64,13 +65,22 @@ public class EntityDisplay implements ToroHealthDisplay {
             glY = (float) y + HEIGHT - PADDING;
             return;
         }
-        int scaleY = MathHelper.ceiling_float_int(RENDER_HEIGHT / entity.height);
-        int scaleX = MathHelper.ceiling_float_int(RENDER_WIDTH / entity.width);
+        int scaleY = getPreviewScale(RENDER_HEIGHT, entity.height);
+        int scaleX = getPreviewScale(RENDER_WIDTH, entity.width);
         scale = Math.min(scaleX, scaleY);
         glY = (float) y + (HEIGHT / 2 + RENDER_HEIGHT / 2);
         if (entity instanceof EntityGhast) {
             glY -= 10;
         }
+    }
+
+    private int getPreviewScale(int targetSize, float entitySize) {
+        if (Float.isNaN(entitySize) || entitySize <= 0.0F) return MAX_PREVIEW_SCALE;
+        float requestedScale = targetSize / entitySize;
+        if (!Float.isFinite(requestedScale) || requestedScale >= MAX_PREVIEW_SCALE) {
+            return MAX_PREVIEW_SCALE;
+        }
+        return Math.max(1, MathHelper.ceiling_float_int(requestedScale));
     }
 
     private void glDraw() {

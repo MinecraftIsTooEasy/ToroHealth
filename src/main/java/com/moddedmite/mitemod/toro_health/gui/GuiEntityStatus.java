@@ -2,7 +2,9 @@ package com.moddedmite.mitemod.toro_health.gui;
 
 import net.minecraft.EntityLivingBase;
 import net.minecraft.Gui;
+import net.minecraft.MathHelper;
 import net.minecraft.Minecraft;
+import net.minecraft.OpenGlHelper;
 import net.minecraft.ResourceLocation;
 import net.minecraft.ScaledResolution;
 import net.minecraft.Tessellator;
@@ -20,6 +22,9 @@ public class GuiEntityStatus extends Gui {
     public static final ResourceLocation ICONS = new ResourceLocation("textures/gui/icons.png");
 
     private static final int PADDING_FROM_EDGE = 3;
+    private static final int PANEL_WIDTH = 160;
+    private static final int PANEL_HEIGHT = 60;
+    private static final int PANEL_ANCHOR_OFFSET = 10;
     private static final ResourceLocation SKIN_BASIC = new ResourceLocation(ToroHealth.MOD_ID, "textures/gui/default_skin_basic.png");
     private static final ResourceLocation SKIN_HEAVY = new ResourceLocation(ToroHealth.MOD_ID, "textures/gui/default_skin_heavy.png");
 
@@ -35,8 +40,7 @@ public class GuiEntityStatus extends Gui {
 
     int screenX = PADDING_FROM_EDGE;
     int screenY = PADDING_FROM_EDGE;
-    int displayHeight;
-    int displayWidth;
+    private float panelScale = 1.0F;
     int x, y;
 
     public GuiEntityStatus() {
@@ -71,10 +75,16 @@ public class GuiEntityStatus extends Gui {
 
         updatePositions();
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        GL11.glPushMatrix();
         try {
+            GL11.glTranslatef(screenX, screenY, 0.0F);
+            GL11.glScalef(panelScale, panelScale, 1.0F);
+            GL11.glTranslatef(-screenX, -screenY, 0.0F);
+            prepareGuiRenderState();
             drawSkin();
             draw();
         } finally {
+            GL11.glPopMatrix();
             GL11.glPopAttrib();
         }
     }
@@ -89,7 +99,8 @@ public class GuiEntityStatus extends Gui {
         }
 
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        drawModalRectWithCustomSizedTexture(screenX - 10, screenY - 10, 0.0f, 0.0f, 160, 60, 160, 60);
+        drawModalRectWithCustomSizedTexture(screenX - PANEL_ANCHOR_OFFSET, screenY - PANEL_ANCHOR_OFFSET,
+                0.0f, 0.0f, PANEL_WIDTH, PANEL_HEIGHT, PANEL_WIDTH, PANEL_HEIGHT);
     }
 
     private void updateGuiAge() {
@@ -121,7 +132,10 @@ public class GuiEntityStatus extends Gui {
 
     private void draw() {
         if (ToroHealthConfigs.showEntityModel()) {
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthMask(true);
             entityDisplay.draw();
+            prepareGuiRenderState();
         }
 
         if (ToroHealthConfigs.entityStatusDisplay() == ToroHealthConfigs.EntityStatusDisplay.NUMERIC) {
@@ -133,39 +147,63 @@ public class GuiEntityStatus extends Gui {
         }
     }
 
-    private void adjustForDisplayPositionSetting() {
-        if (ToroHealthConfigs.showEntityModel()) {
-            displayHeight = 40;
-            displayWidth = 140;
-        } else {
-            displayHeight = 32;
-            displayWidth = 100;
+    private void prepareGuiRenderState() {
+        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit);
+        if (OpenGlHelper.lightmapTexUnit != OpenGlHelper.defaultTexUnit) {
+            OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
         }
 
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_FOG);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glDisable(GL11.GL_CULL_FACE);
+        GL11.glDepthMask(false);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    private void adjustForDisplayPositionSetting() {
         ScaledResolution viewport = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
         ToroHealthConfigs.StatusDisplayPosition displayPosition = ToroHealthConfigs.statusDisplayPosition();
 
         int sh = viewport.getScaledHeight();
         int sw = viewport.getScaledWidth();
+        panelScale = ToroHealthConfigs.statusDisplayScale() / 100.0F;
 
-        if (displayPosition.isTop() || displayPosition.isCustom()) {
-            screenY = PADDING_FROM_EDGE;
+        int leftInset = MathHelper.ceiling_float_int(PANEL_ANCHOR_OFFSET * panelScale);
+        int rightExtent = MathHelper.ceiling_float_int((PANEL_WIDTH - PANEL_ANCHOR_OFFSET) * panelScale);
+        int topInset = MathHelper.ceiling_float_int(PANEL_ANCHOR_OFFSET * panelScale);
+        int bottomExtent = MathHelper.ceiling_float_int((PANEL_HEIGHT - PANEL_ANCHOR_OFFSET) * panelScale);
+
+        screenX = PADDING_FROM_EDGE + leftInset;
+        screenY = PADDING_FROM_EDGE + topInset;
+        if (displayPosition.isRight()) {
+            screenX = sw - PADDING_FROM_EDGE - rightExtent;
+        } else if (displayPosition.isCenter()) {
+            screenX = Math.round((sw - (PANEL_WIDTH - PANEL_ANCHOR_OFFSET * 2) * panelScale) / 2.0F);
         }
         if (displayPosition.isBottom()) {
-            screenY = sh - displayHeight - PADDING_FROM_EDGE;
-        }
-        if (displayPosition.isLeft()) {
-            screenX = PADDING_FROM_EDGE;
-        }
-        if (displayPosition.isRight()) {
-            screenX = sw - displayWidth - PADDING_FROM_EDGE;
-        }
-        if (displayPosition.isCenter()) {
-            screenX = (sw - displayWidth) / 2;
+            screenY = sh - PADDING_FROM_EDGE - bottomExtent;
         }
 
         screenX += ToroHealthConfigs.statusDisplayX();
         screenY += ToroHealthConfigs.statusDisplayY();
+        screenX = clampPanelPosition(screenX, sw, leftInset, rightExtent);
+        screenY = clampPanelPosition(screenY, sh, topInset, bottomExtent);
+    }
+
+    private int clampPanelPosition(int position, int viewportSize, int leadingExtent, int trailingExtent) {
+        int min = PADDING_FROM_EDGE + leadingExtent;
+        int max = viewportSize - PADDING_FROM_EDGE - trailingExtent;
+        if (max < min) return min;
+        return Math.max(min, Math.min(position, max));
     }
 
     private void showHealthBar() {

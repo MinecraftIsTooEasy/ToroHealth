@@ -7,6 +7,7 @@ import net.minecraft.Minecraft;
 import net.minecraft.Tessellator;
 import net.minecraft.OpenGlHelper;
 import net.minecraft.World;
+import com.moddedmite.mitemod.toro_health.display.ToroHealthFormatting;
 import org.lwjgl.opengl.GL11;
 
 public class DamageParticle extends EntityFX {
@@ -19,9 +20,9 @@ public class DamageParticle extends EntityFX {
     protected boolean shouldOnTop = true;
     protected boolean grow = true;
     protected float scale = 1.0F;
-    private final int damage;
+    private final double damage;
 
-    public DamageParticle(int damage, World world, double parX, double parY, double parZ, double parMotionX, double parMotionY, double parMotionZ) {
+    public DamageParticle(double damage, World world, double parX, double parY, double parZ, double parMotionX, double parMotionY, double parMotionZ) {
         super(world, parX, parY, parZ, parMotionX, parMotionY, parMotionZ);
         particleTextureJitterX = 0.0F;
         particleTextureJitterY = 0.0F;
@@ -29,7 +30,7 @@ public class DamageParticle extends EntityFX {
         particleScale = SIZE;
         particleMaxAge = LIFESPAN;
         this.damage = damage;
-        this.text = Integer.toString(Math.abs(damage));
+        this.text = ToroHealthFormatting.formatAmount(Math.abs(damage));
     }
 
     @Override

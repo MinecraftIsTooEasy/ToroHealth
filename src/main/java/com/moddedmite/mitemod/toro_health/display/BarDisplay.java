@@ -38,13 +38,15 @@ public class BarDisplay extends AbstractHealthDisplay implements ToroHealthDispl
 
     public void renderBossHealth() {
         String name = getEntityName();
-        String health = (int) Math.ceil(entity.getHealth()) + "/" + (int) entity.getMaxHealth();
+        String health = ToroHealthFormatting.formatHealthPair(entity.getHealth(), entity.getMaxHealth());
 
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         mc.getTextureManager().bindTexture(GUI_BARS_TEXTURES);
         renderHealthBar();
-        mc.fontRenderer.drawStringWithShadow(name, barX, y + 2, 0xFFFFFF);
-        mc.fontRenderer.drawStringWithShadow(health, barX, y + 20, 0xFFFFFF);
+        mc.fontRenderer.drawStringWithShadow(ToroHealthFormatting.fitText(mc.fontRenderer, name, BAR_WIDTH),
+                barX, y + 2, 0xFFFFFF);
+        mc.fontRenderer.drawStringWithShadow(ToroHealthFormatting.fitText(mc.fontRenderer, health, BAR_WIDTH),
+                barX, y + 20, 0xFFFFFF);
     }
 
     public enum Color {
@@ -53,9 +55,9 @@ public class BarDisplay extends AbstractHealthDisplay implements ToroHealthDispl
 
     private void renderHealthBar() {
         Color color = determineColor();
-        float percent = entity.getHealth() / entity.getMaxHealth();
+        float percent = ToroHealthFormatting.healthRatio(entity.getHealth(), entity.getMaxHealth());
         drawTexturedModalRectCustom(barX, barY, 0, color.ordinal() * 5 * 2, BAR_WIDTH, 5, 256, 256);
-        int healthWidth = (int) (percent * BAR_WIDTH);
+        int healthWidth = Math.max(0, Math.min(BAR_WIDTH, Math.round(percent * BAR_WIDTH)));
         if (healthWidth > 0) {
             drawTexturedModalRectCustom(barX, barY, 0, color.ordinal() * 5 * 2 + 5, healthWidth, 5, 256, 256);
         }

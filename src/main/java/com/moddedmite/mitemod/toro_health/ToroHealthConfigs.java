@@ -30,32 +30,34 @@ public class ToroHealthConfigs extends SimpleConfigs {
     }
 
     public static final ConfigBoolean showEntityModel =
-            new ConfigBoolean("toro_health.show_entity_model", true, "显示实体3D模型");
+            new ConfigBoolean("toro_health.show_entity_model", true, "config.comment.toro_health.show_entity_model");
     public static final ConfigBoolean showDamageParticles =
-            new ConfigBoolean("toro_health.show_damage_particles", true, "显示伤害数字粒子");
+            new ConfigBoolean("toro_health.show_damage_particles", true, "config.comment.toro_health.show_damage_particles");
     public static final ConfigEnum<EntityStatusDisplay> entityStatusDisplay =
-            new ConfigEnum<>("toro_health.entity_status_display", EntityStatusDisplay.HEARTS, "血量样式");
+            new ConfigEnum<>("toro_health.entity_status_display", EntityStatusDisplay.HEARTS, "config.comment.toro_health.entity_status_display");
     public static final ConfigEnum<StatusDisplayPosition> statusDisplayPosition =
-            new ConfigEnum<>("toro_health.status_display_position", StatusDisplayPosition.TOP_LEFT, "显示位置");
+            new ConfigEnum<>("toro_health.status_display_position", StatusDisplayPosition.TOP_LEFT, "config.comment.toro_health.status_display_position");
     public static final ConfigEnum<Skin> skin =
-            new ConfigEnum<>("toro_health.skin", Skin.BASIC, "皮肤");
+            new ConfigEnum<>("toro_health.skin", Skin.BASIC, "config.comment.toro_health.skin");
     public static final ConfigInteger statusDisplayX =
-            new ConfigInteger("toro_health.status_display_x", 0, -200, 200, true, "X偏移");
+            new ConfigInteger("toro_health.status_display_x", 0, -200, 200, true, "config.comment.toro_health.status_display_x");
     public static final ConfigInteger statusDisplayY =
-            new ConfigInteger("toro_health.status_display_y", 0, -200, 200, true, "Y偏移");
+            new ConfigInteger("toro_health.status_display_y", 0, -200, 200, true, "config.comment.toro_health.status_display_y");
+    public static final ConfigInteger statusDisplayScale =
+            new ConfigInteger("toro_health.status_display_scale", 100, 50, 200, true, "config.comment.toro_health.status_display_scale");
     public static final ConfigInteger hideDelay =
-            new ConfigInteger("toro_health.hide_delay", 400, 0, 10000, true, "隐藏延迟(ms)");
+            new ConfigInteger("toro_health.hide_delay", 400, 0, 10000, true, "config.comment.toro_health.hide_delay");
     public static final ConfigColor damageColor =
-            new ConfigColor("toro_health.damage_color", "#FFFF0000", "伤害数字颜色");
+            new ConfigColor("toro_health.damage_color", "#FFFF0000", "config.comment.toro_health.damage_color");
     public static final ConfigColor healColor =
-            new ConfigColor("toro_health.heal_color", "#FF00FF00", "治疗数字颜色");
+            new ConfigColor("toro_health.heal_color", "#FF00FF00", "config.comment.toro_health.heal_color");
 
     private static final ToroHealthConfigs INSTANCE = new ToroHealthConfigs();
 
     public ToroHealthConfigs() {
         super(
                 "toro_health",
-                List.of(),
+                null,
                 List.of(
                         showEntityModel,
                         showDamageParticles,
@@ -64,11 +66,11 @@ public class ToroHealthConfigs extends SimpleConfigs {
                         skin,
                         statusDisplayX,
                         statusDisplayY,
+                        statusDisplayScale,
                         hideDelay,
                         damageColor,
                         healColor
-                ),
-                "ToroHealth 配置"
+                )
         );
     }
 
@@ -102,6 +104,10 @@ public class ToroHealthConfigs extends SimpleConfigs {
 
     public static int statusDisplayY() {
         return statusDisplayY.getIntegerValue();
+    }
+
+    public static int statusDisplayScale() {
+        return statusDisplayScale.getIntegerValue();
     }
 
     public static int hideDelay() {

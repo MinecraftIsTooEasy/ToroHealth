@@ -11,7 +11,7 @@ public class ToroHealthClient {
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private final GuiEntityStatus entityStatusGUI;
-    private final WeakHashMap<EntityLivingBase, Integer> previousHealthMap = new WeakHashMap<>();
+    private final WeakHashMap<EntityLivingBase, Double> previousHealthMap = new WeakHashMap<>();
 
     public ToroHealthClient() {
         this.entityStatusGUI = new GuiEntityStatus();
@@ -22,15 +22,16 @@ public class ToroHealthClient {
         if (!entity.worldObj.isRemote) return;
         if (!ToroHealthConfigs.showDamageParticles()) return;
 
-        int currentHealth = (int) Math.ceil(entity.getHealth());
-        Integer previousHealth = previousHealthMap.get(entity);
+        double currentHealth = Math.ceil(Math.max(0.0F, entity.getHealth()));
+        if (Double.isNaN(currentHealth)) currentHealth = 0.0D;
+        Double previousHealth = previousHealthMap.get(entity);
         if (previousHealth != null && previousHealth != currentHealth) {
             displayParticle(entity, previousHealth - currentHealth);
         }
         previousHealthMap.put(entity, currentHealth);
     }
 
-    private void displayParticle(Entity entity, int damage) {
+    private void displayParticle(Entity entity, double damage) {
         if (damage == 0) return;
         double motionX = entity.worldObj.rand.nextGaussian() * 0.02;
         double motionY = 0.5f;
